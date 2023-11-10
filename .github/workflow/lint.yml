@@ -1,0 +1,29 @@
+name: Lint
+
+on: [push]
+
+jobs:
+  lint:
+    name: Run Lint
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Run make lint
+      id: make-lint
+      run: make lint
+
+    - name: Check results
+      run: |
+        if grep -q 'Error' <<< "${{ steps.make-lint.outputs.stdout }}"; then
+          echo "There are lint errors"
+          exit 1
+        fi
+      shell: bash
