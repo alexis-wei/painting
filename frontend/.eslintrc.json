@@ -22,11 +22,12 @@
   "rules": {
     "semi": ["error", "always"],
     "quotes": ["error", "single"],
-    "tailwindcss/classnames-order": "warn",
+    "tailwindcss/classnames-order": "error",
     "tailwindcss/no-custom-classname": "warn",
     "tailwindcss/no-contradicting-classname": "error",
     "no-unreachable": "error",
     "no-console": "warn",
-    "no-undef": "off"
+    "no-undef": "off",
+    "prefer-arrow-callback": "error"
   }
 }
