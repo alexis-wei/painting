@@ -14,33 +14,12 @@ import path from 'path';
 GRPCWeb.setDefaultTransport(NodeHttpTransport());
 
 const metadata = new GRPCWeb.Metadata();
-metadata.set('Authorization', 'Bearer ' + (process.env).STABILITY_AI_API_KEY);
+metadata.set('Authorization', 'Bearer ' + process.env.STABILITY_AI_API_KEY);
 
 // Create a generation client to use with all future requests
 const client = new GenerationServiceClient('https://grpc.stability.ai', {});
 
-// const imageUrlToBuffer = async(url: string) => {
-//   try {
-//     const response = await fetch(url);
-//     if (!response.ok) {
-//         throw new Error(`Failed to fetch image: ${response.statusText}`);
-//     }
-
-//     const blob = await response.blob();
-
-//     return Buffer.from(await blob.arrayBuffer());
-//   } catch (error) {
-//     console.log('fetching err:', error);
-//   }
-// };
-
 export const imageMasking = async (prompt: string) => {
-  // const initBuffer = await imageUrlToBuffer('https://painttest.s3.ap-southeast-2.amazonaws.com/Frame+1.png');
-  // const maskBuffer = await imageUrlToBuffer('https://painttest.s3.ap-southeast-2.amazonaws.com/Frame+2.jpg');
-
-  // const initBuffer = await imageUrlToBuffer('https://dummyimage.com/300x300/000/fff.png');
-  // const maskBuffer = await imageUrlToBuffer('https://dummyimage.com/300x300/000/fff.png');
-
   const initImagePath = path.join(process.cwd(), 'public', 'img.png');
   const initBuffer = fs.readFileSync(initImagePath);
   const initMaskPath = path.join(process.cwd(), 'public', 'mask.jpg');
