@@ -7,10 +7,9 @@ import {
   executeGenerationRequest,
   onGenerationComplete,
 } from './stability_helpers';
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs';
+// import path from 'path';
 
-// This is a NodeJS-specific requirement - browsers implementations should omit this line.
 GRPCWeb.setDefaultTransport(NodeHttpTransport());
 
 const metadata = new GRPCWeb.Metadata();
@@ -19,11 +18,10 @@ metadata.set('Authorization', 'Bearer ' + process.env.STABILITY_AI_API_KEY);
 // Create a generation client to use with all future requests
 const client = new GenerationServiceClient('https://grpc.stability.ai', {});
 
-export const imageMasking = async (prompt: string) => {
-  const initImagePath = path.join(process.cwd(), 'public', 'img.png');
-  const initBuffer = fs.readFileSync(initImagePath);
-  const initMaskPath = path.join(process.cwd(), 'public', 'mask.jpg');
-  const maskBuffer = fs.readFileSync(initMaskPath);
+export const imageMasking = async (requestBody: any) => {
+  const { prompt, initImg, maskImg } = requestBody;
+  const initBuffer = Buffer.from(initImg.split(',')[1], 'base64');
+  const maskBuffer = Buffer.from(maskImg.split(',')[1], 'base64');
 
   if (!initBuffer || !maskBuffer) {
     console.log('buffers failed to create');
@@ -37,6 +35,10 @@ export const imageMasking = async (prompt: string) => {
     prompts: [
       {
         text: prompt,
+      },
+      {
+        text: 'nudity, nsfw',
+        weight: -1,
       },
     ],
     seed: 2362349534,

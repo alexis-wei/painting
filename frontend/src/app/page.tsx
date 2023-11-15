@@ -33,29 +33,9 @@ const Main = () => {
     }
   };
 
-  const handleMaskClick = async () => {
-    try {
-      const response = await fetch('/api/mask', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: 'busy bakery, realistic style',
-        }),
-      });
-      let prediction = await response.json();
-
-      console.log(prediction);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   return (
     <main className='flex h-screen w-screen'>
       <div className='flex h-screen w-screen grow flex-col items-center justify-center gap-2 p-4'>
-        <button onClick={handleMaskClick}>send</button>
         {preview ? (
           <Canvas imgSrc={preview} imgSize={imageSize} />
         ) : (

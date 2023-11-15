@@ -8,8 +8,11 @@ type Props = {
   imgSize: ImageSize;
 };
 
-export const setCanvasToWhite = (context: CanvasRenderingContext2D) => {
-  context.fillStyle = '#FFFFFF';
+export const setCanvasToColor = (
+  context: CanvasRenderingContext2D,
+  color: string
+) => {
+  context.fillStyle = color;
   context.fillRect(0, 0, 512, 512);
 };
 
@@ -60,10 +63,16 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
     }
   };
 
-  const drawBlackBox = (context: CanvasRenderingContext2D) => {
-    context.fillStyle = '#000000';
+  const drawWhiteBox = (context: CanvasRenderingContext2D) => {
+    context.fillStyle = '#FFFFFF';
     const { xMin, xMax, yMin, yMax } = blackBox;
-    context.fillRect(xMin, yMin, xMax - xMin, yMax - yMin);
+    const overlap = 8;
+    context.fillRect(
+      xMin - overlap,
+      yMin - overlap,
+      xMax - xMin - overlap * 2,
+      yMax - yMin - overlap * 2
+    );
   };
 
   const drawToCanvas = (
@@ -90,23 +99,53 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
     setMaskPos(rec);
   };
 
-  const handleGenerateButtonClick = () => {
+  const handleGenerateButtonClick = async () => {
     const maskCtx = maskCanvasRef.current?.getContext('2d');
     const imgCtx = imgCanvasRef.current?.getContext('2d');
     const currImg = initImageRef.current;
+
     if (maskCtx && imgCtx && maskPos && currImg) {
-      console.log('maskPos:', maskPos);
-      findBlackBox(maskPos);
-      drawBlackBox(maskCtx);
-      drawToCanvas(imgCtx, currImg);
-      const maskDataUrl = maskCanvasRef.current?.toDataURL('image/jpeg');
-      console.log('maskDataUrl', maskDataUrl);
-      const imgDataUrl = imgCanvasRef.current?.toDataURL('image/jpeg');
-      console.log('imgDataUrl', imgDataUrl);
+      try {
+        findBlackBox(maskPos);
+        drawWhiteBox(maskCtx);
+        drawToCanvas(imgCtx, currImg);
+        const maskDataUrl = maskCanvasRef.current?.toDataURL('image/jpeg');
+        const imgDataUrl = imgCanvasRef.current?.toDataURL('image/jpeg');
+        if (imgDataUrl && maskDataUrl) {
+          console.log('imgDataUrl:', imgDataUrl);
+          console.log('maskDataUrl:', maskDataUrl);
+          await callGenerate(imgDataUrl, maskDataUrl);
+        } else {
+          throw new Error('failed to get image masks');
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
-  const initCanvas = (canvas: HTMLCanvasElement | null) => {
+  const callGenerate = async (initImg: string, maskImg: string) => {
+    try {
+      const response = await fetch('/api/mask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: 'busy bakery, realistic style',
+          initImg: initImg,
+          maskImg: maskImg,
+        }),
+      });
+      let prediction = await response.json();
+
+      console.log(prediction);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const initCanvas = (canvas: HTMLCanvasElement | null, color: string) => {
     if (!canvas) {
       return;
     }
@@ -115,13 +154,13 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
 
     const context = canvas.getContext('2d');
     if (context) {
-      setCanvasToWhite(context);
+      setCanvasToColor(context, color);
     }
   };
 
   useEffect(() => {
-    initCanvas(maskCanvasRef.current);
-    initCanvas(imgCanvasRef.current);
+    initCanvas(maskCanvasRef.current, '#000000');
+    initCanvas(imgCanvasRef.current, '#FFFFFF');
   }, []);
 
   return (
