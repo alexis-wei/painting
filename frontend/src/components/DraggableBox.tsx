@@ -4,7 +4,7 @@ import { DivPosition } from '@/components/types';
 type Props = {
   initPosition: DivPosition;
   // eslint-disable-next-line no-unused-vars
-  onNewPosition: (rec: DOMRect) => void
+  onNewPosition: (rec: DOMRect) => void;
 };
 
 const DraggableBox: React.FC<Props> = ({ initPosition, onNewPosition }) => {
@@ -36,7 +36,7 @@ const DraggableBox: React.FC<Props> = ({ initPosition, onNewPosition }) => {
       const rect1 = boxRef.current.getBoundingClientRect();
       onNewPosition(rect1);
     }
-   
+
     e.stopPropagation();
     e.preventDefault();
   };

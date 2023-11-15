@@ -3,6 +3,11 @@ export interface ImageSize {
   height: number;
 }
 
+export interface ImageClipping {
+  x: number;
+  y: number;
+}
+
 export interface DivPosition {
   left: number;
   top: number;
