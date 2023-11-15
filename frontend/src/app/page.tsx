@@ -34,8 +34,8 @@ const Main = () => {
   };
 
   return (
-    <main className='flex h-screen w-screen grow flex-col'>
-      <div className='flex h-full w-full flex-col items-center justify-center gap-2 p-4'>
+    <main className='flex h-screen w-screen'>
+      <div className='flex h-screen w-screen grow flex-col items-center justify-center gap-2 p-4'>
         {preview ? (
           <Canvas imgSrc={preview} imgSize={imageSize} />
         ) : (

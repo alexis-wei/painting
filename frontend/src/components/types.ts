@@ -4,6 +4,13 @@ export interface ImageSize {
 }
 
 export interface DivPosition {
-  x: number;
-  y: number;
+  left: number;
+  top: number;
+}
+
+export interface BoundingBox {
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
 }
