@@ -34,15 +34,20 @@ export const generateOutpaint = async (requestBody: any): Promise<Buffer[]> => {
     prompts: [
       {
         text: prompt,
+        weight: 1,
       },
       {
-        text: 'nudity, nsfw',
+        text: '4k, 8k, high quality, detailed',
+        weight: 1,
+      },
+      {
+        text: 'nudity, nsfw, low resolution, blurry, mutates, extra limb',
         weight: -1,
       },
     ],
-    seed: 2362349534,
+    seed: Math.floor(Math.random() * 99999999),
     samples: 1,
-    cfgScale: 8,
+    cfgScale: 7,
     steps: 50,
     sampler: Generation.DiffusionSampler.SAMPLER_K_DPMPP_2M,
   });
