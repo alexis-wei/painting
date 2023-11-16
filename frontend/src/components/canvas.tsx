@@ -160,8 +160,8 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         const maskDataUrl = maskCanvasRef.current?.toDataURL('image/jpeg');
         const imgDataUrl = imgCanvasRef.current?.toDataURL('image/jpeg');
         if (imgDataUrl && maskDataUrl) {
-          // console.log('imgDataUrl:', imgDataUrl);
-          // console.log('maskDataUrl:', maskDataUrl);
+          console.log('imgDataUrl:', imgDataUrl);
+          console.log('maskDataUrl:', maskDataUrl);
           await callGenerate(imgDataUrl, maskDataUrl);
         } else {
           throw new Error('failed to get image masks');
