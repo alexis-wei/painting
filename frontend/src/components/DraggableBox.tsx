@@ -3,7 +3,6 @@ import { DivPosition } from '@/components/types';
 
 type Props = {
   initPosition: DivPosition;
-  // eslint-disable-next-line no-unused-vars
   onNewPosition: (rec: DOMRect) => void;
 };
 
@@ -58,7 +57,7 @@ const DraggableBox: React.FC<Props> = ({ initPosition, onNewPosition }) => {
         left: `${position.left}px`,
         top: `${position.top}px`,
       }}
-      className='absolute h-[512px] w-[512px] border border-purple-400 bg-purple-300/50 p-2 hover:cursor-move'
+      className='absolute h-[256px] w-[256px] border border-purple-400 bg-purple-300/50 p-2 hover:cursor-move'
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}

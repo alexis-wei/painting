@@ -18,14 +18,13 @@ metadata.set('Authorization', 'Bearer ' + process.env.STABILITY_AI_API_KEY);
 // Create a generation client to use with all future requests
 const client = new GenerationServiceClient('https://grpc.stability.ai', {});
 
-export const imageMasking = async (requestBody: any) => {
+export const generateOutpaint = async (requestBody: any): Promise<Buffer[]> => {
   const { prompt, initImg, maskImg } = requestBody;
   const initBuffer = Buffer.from(initImg.split(',')[1], 'base64');
   const maskBuffer = Buffer.from(maskImg.split(',')[1], 'base64');
 
   if (!initBuffer || !maskBuffer) {
-    console.log('buffers failed to create');
-    return;
+    throw new Error('buffers failed to create');
   }
 
   const request = buildGenerationRequest('stable-inpainting-v1-0', {
@@ -48,14 +47,10 @@ export const imageMasking = async (requestBody: any) => {
     sampler: Generation.DiffusionSampler.SAMPLER_K_DPMPP_2M,
   });
 
-  try {
-    const generatedImageResp = await executeGenerationRequest(
-      client,
-      request,
-      metadata
-    );
-    onGenerationComplete(generatedImageResp);
-  } catch (err) {
-    console.log(err);
-  }
+  const generatedImageResp = await executeGenerationRequest(
+    client,
+    request,
+    metadata
+  );
+  return onGenerationComplete(generatedImageResp);
 };

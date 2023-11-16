@@ -1,11 +1,14 @@
-import { imageMasking } from '@/api/stability';
+import { generateOutpaint } from '@/api/stability';
 
 export default async function handler(req: any, res: any) {
-  console.log('called maks handler');
   try {
-    await imageMasking(req.body);
-    res.status(200);
-  } catch {
-    res.status(400);
+    const resultArr: Buffer[] = await generateOutpaint(req.body);
+    const body = {
+      images: resultArr,
+    };
+    res.status(200).json(body);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }

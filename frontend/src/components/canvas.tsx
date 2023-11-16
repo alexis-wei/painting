@@ -3,6 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ImageSize, BoundingBox } from '@/components/types';
 import DraggableBox from '@/components/DraggableBox';
 
+const CANVAS_SIZE = 256;
+const OVERLAP = 8;
+
 type Props = {
   imgSrc: string;
   imgSize: ImageSize;
@@ -13,19 +16,31 @@ export const setCanvasToColor = (
   color: string
 ) => {
   context.fillStyle = color;
-  context.fillRect(0, 0, 512, 512);
+  context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 };
+
+interface genImage {
+  src: string;
+  xPos: number;
+  yPos: number;
+}
 
 const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
   const initImageRef = useRef<HTMLImageElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
   const imgCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [generatedImgs, setGeneratedImgs] = useState<genImage[]>([]);
 
   const [zoom] = useState<number>(1);
   const [maskPos, setMaskPos] = useState<DOMRect | undefined>();
 
   let imgClipping = { x: 0, y: 0 };
-  let blackBox: BoundingBox = { xMin: 0, yMin: 0, xMax: 512, yMax: 512 };
+  let blackBox: BoundingBox = {
+    xMin: 0,
+    yMin: 0,
+    xMax: CANVAS_SIZE,
+    yMax: CANVAS_SIZE,
+  };
 
   const cutLeft = (imgRect: DOMRect, maskRect: DOMRect) => {
     const space = imgRect.left - maskRect.left;
@@ -39,12 +54,12 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
 
   const cutRight = (imgRect: DOMRect, maskRect: DOMRect) => {
     const space = maskRect.right - imgRect.right;
-    return space > 0 ? 512 - space : 512;
+    return space > 0 ? CANVAS_SIZE - space : CANVAS_SIZE;
   };
 
   const cutBottom = (imgRect: DOMRect, maskRect: DOMRect) => {
     const space = maskRect.bottom - imgRect.bottom;
-    return space > 0 ? 512 - space : 512;
+    return space > 0 ? CANVAS_SIZE - space : CANVAS_SIZE;
   };
 
   const findBlackBox = (maskRect: DOMRect) => {
@@ -55,8 +70,8 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
       const xMax = cutRight(imgRect, maskRect);
       const yMax = cutBottom(imgRect, maskRect);
       blackBox = { xMin, yMin, xMax, yMax };
-      const x = imgSize.width - (xMax - xMin);
-      const y = imgSize.height - (yMax - yMin);
+      const x = xMax === CANVAS_SIZE ? 0 : imgSize.width - (xMax - xMin);
+      const y = yMax === CANVAS_SIZE ? 0 : imgSize.height - (yMax - yMin);
       imgClipping = { x, y };
     } else {
       console.log('no image rect found');
@@ -66,12 +81,13 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
   const drawWhiteBox = (context: CanvasRenderingContext2D) => {
     context.fillStyle = '#FFFFFF';
     const { xMin, xMax, yMin, yMax } = blackBox;
-    const overlap = 8;
+
+    // we want the white rect to be smaller, only if it's not bordering the canvas
     context.fillRect(
-      xMin - overlap,
-      yMin - overlap,
-      xMax - xMin - overlap * 2,
-      yMax - yMin - overlap * 2
+      xMin === 0 ? 0 : xMin + OVERLAP,
+      yMin === 0 ? 0 : yMin + OVERLAP,
+      xMax === CANVAS_SIZE ? xMax - xMin : xMax - xMin - OVERLAP * 2,
+      yMax === CANVAS_SIZE ? yMax - yMin : yMax - yMin - OVERLAP * 2
     );
   };
 
@@ -112,8 +128,8 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         const maskDataUrl = maskCanvasRef.current?.toDataURL('image/jpeg');
         const imgDataUrl = imgCanvasRef.current?.toDataURL('image/jpeg');
         if (imgDataUrl && maskDataUrl) {
-          console.log('imgDataUrl:', imgDataUrl);
-          console.log('maskDataUrl:', maskDataUrl);
+          // console.log('imgDataUrl:', imgDataUrl);
+          // console.log('maskDataUrl:', maskDataUrl);
           await callGenerate(imgDataUrl, maskDataUrl);
         } else {
           throw new Error('failed to get image masks');
@@ -122,6 +138,16 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         console.log(error);
       }
     }
+  };
+
+  const bufferToBase64 = (buffer: any) => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer.data);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
   };
 
   const callGenerate = async (initImg: string, maskImg: string) => {
@@ -138,8 +164,14 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         }),
       });
       let prediction = await response.json();
-
-      console.log(prediction);
+      if (prediction && prediction.images && maskPos) {
+        const base64Image = bufferToBase64(prediction.images[0]);
+        const generatedImgSrc = `data:image/jpeg;base64,${base64Image}`;
+        setGeneratedImgs([
+          ...generatedImgs,
+          { src: generatedImgSrc, xPos: maskPos?.left, yPos: maskPos.top },
+        ]);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -149,8 +181,8 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
     if (!canvas) {
       return;
     }
-    canvas.width = 512;
-    canvas.height = 512;
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
 
     const context = canvas.getContext('2d');
     if (context) {
@@ -185,9 +217,21 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         }}
       />
       <DraggableBox
-        initPosition={{ left: 10, top: 10 }}
+        initPosition={{ left: 20, top: 20 }}
         onNewPosition={handleBoxMove}
       />
+      {generatedImgs.map((item, idx) => (
+        <img
+          className='absolute'
+          style={{
+            left: item.xPos,
+            top: item.yPos,
+          }}
+          src={item.src}
+          key={idx}
+          alt={`generated image ${idx}`}
+        />
+      ))}
       <canvas ref={maskCanvasRef} style={{ display: 'none' }} />
       <canvas ref={imgCanvasRef} style={{ display: 'none' }} />
     </div>
