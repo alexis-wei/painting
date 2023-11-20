@@ -100,8 +100,6 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
       const xMax = cutRight(imgRect, maskRect);
       const yMax = cutBottom(imgRect, maskRect);
       blackBox = { xMin, yMin, xMax, yMax };
-      // const x = xMax === CANVAS_SIZE ? 0 : imgSize.width - (xMax - xMin);
-      // const y = yMax === CANVAS_SIZE ? 0 : imgSize.height - (yMax - yMin);
       imgClipping = checkDim(imgRect, maskRect);
     } else {
       console.log('no image rect found');
@@ -160,8 +158,8 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         const maskDataUrl = maskCanvasRef.current?.toDataURL('image/jpeg');
         const imgDataUrl = imgCanvasRef.current?.toDataURL('image/jpeg');
         if (imgDataUrl && maskDataUrl) {
-          console.log('imgDataUrl:', imgDataUrl);
-          console.log('maskDataUrl:', maskDataUrl);
+          // console.log('imgDataUrl:', imgDataUrl);
+          // console.log('maskDataUrl:', maskDataUrl);
           await callGenerate(imgDataUrl, maskDataUrl);
         } else {
           throw new Error('failed to get image masks');
