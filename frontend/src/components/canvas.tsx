@@ -3,7 +3,7 @@ import React, { useState, useRef, ChangeEvent } from 'react';
 import { ImageSize, BoundingBox } from '@/components/types';
 import DraggableBox from '@/components/DraggableBox';
 
-const CANVAS_SIZE = 256;
+const CANVAS_SIZE = 512;
 const OVERLAP = 8;
 
 type Props = {
@@ -83,6 +83,7 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
   const [promptInput, setPromptInput] = useState<string>('');
   const [zoom] = useState<number>(1);
   const [maskPos, setMaskPos] = useState<DOMRect | undefined>();
+  // const [generating, setGenerating] = useState<boolean>(false);
 
   let imgClipping = { x: 0, y: 0 };
   let blackBox: BoundingBox = {
@@ -160,7 +161,9 @@ const Canvas: React.FC<Props> = ({ imgSrc, imgSize }) => {
         if (imgDataUrl && maskDataUrl) {
           // console.log('imgDataUrl:', imgDataUrl);
           // console.log('maskDataUrl:', maskDataUrl);
+          // setGenerating(true);
           await callGenerate(imgDataUrl, maskDataUrl);
+          // setGenerating(false);
         } else {
           throw new Error('failed to get image masks');
         }

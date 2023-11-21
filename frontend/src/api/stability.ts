@@ -27,7 +27,7 @@ export const generateOutpaint = async (requestBody: any): Promise<Buffer[]> => {
     throw new Error('buffers failed to create');
   }
 
-  const request = buildGenerationRequest('stable-inpainting-v1-0', {
+  const request = buildGenerationRequest('stable-diffusion-512-v2-1', {
     type: 'image-to-image-masking',
     initImage: initBuffer,
     maskImage: maskBuffer,

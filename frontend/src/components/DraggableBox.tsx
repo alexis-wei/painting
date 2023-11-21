@@ -58,7 +58,7 @@ const DraggableBox: React.FC<Props> = ({ initPosition, onNewPosition }) => {
         top: `${position.top}px`,
         zIndex: 10000,
       }}
-      className='absolute h-[256px] w-[256px] border border-purple-400 bg-purple-300/50 p-2 hover:cursor-move'
+      className='absolute h-[512px] w-[512px] border border-purple-400 bg-purple-300/50 p-2 hover:cursor-move'
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
