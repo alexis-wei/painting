@@ -36,16 +36,8 @@ export const generateOutpaint = async (requestBody: any): Promise<Buffer[]> => {
         text: prompt,
         weight: 1,
       },
-      // {
-      //   text: '4k, high quality',
-      //   weight: 0.2,
-      // },
-      // {
-      //   text: 'connected, smooth',
-      //   weight: 0.2,
-      // },
       {
-        text: 'nudity, nsfw, blurry, blocky, not smooth, mutates, extra limb, high contrast',
+        text: 'nudity, nsfw, blurry, blocky, not smooth',
         weight: -1,
       },
     ],
