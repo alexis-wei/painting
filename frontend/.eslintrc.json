@@ -28,6 +28,17 @@
     "no-unreachable": "error",
     "no-console": "warn",
     "no-undef": "off",
-    "prefer-arrow-callback": "error"
+    "prefer-arrow-callback": "error",
+    "no-unused-vars": "off", // Turn off the base rule
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": true,
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }
+    ]
   }
 }

@@ -7,10 +7,9 @@ import {
   executeGenerationRequest,
   onGenerationComplete,
 } from './stability_helpers';
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs';
+// import path from 'path';
 
-// This is a NodeJS-specific requirement - browsers implementations should omit this line.
 GRPCWeb.setDefaultTransport(NodeHttpTransport());
 
 const metadata = new GRPCWeb.Metadata();
@@ -19,41 +18,40 @@ metadata.set('Authorization', 'Bearer ' + process.env.STABILITY_AI_API_KEY);
 // Create a generation client to use with all future requests
 const client = new GenerationServiceClient('https://grpc.stability.ai', {});
 
-export const imageMasking = async (prompt: string) => {
-  const initImagePath = path.join(process.cwd(), 'public', 'img.png');
-  const initBuffer = fs.readFileSync(initImagePath);
-  const initMaskPath = path.join(process.cwd(), 'public', 'mask.jpg');
-  const maskBuffer = fs.readFileSync(initMaskPath);
+export const generateOutpaint = async (requestBody: any): Promise<Buffer[]> => {
+  const { prompt, initImg, maskImg } = requestBody;
+  const initBuffer = Buffer.from(initImg.split(',')[1], 'base64');
+  const maskBuffer = Buffer.from(maskImg.split(',')[1], 'base64');
 
   if (!initBuffer || !maskBuffer) {
-    console.log('buffers failed to create');
-    return;
+    throw new Error('buffers failed to create');
   }
 
-  const request = buildGenerationRequest('stable-inpainting-v1-0', {
+  const request = buildGenerationRequest('stable-diffusion-512-v2-1', {
     type: 'image-to-image-masking',
     initImage: initBuffer,
     maskImage: maskBuffer,
     prompts: [
       {
         text: prompt,
+        weight: 1,
+      },
+      {
+        text: 'nudity, nsfw, blurry, blocky, not smooth',
+        weight: -1,
       },
     ],
-    seed: 2362349534,
+    seed: Math.floor(Math.random() * 99999999),
     samples: 1,
-    cfgScale: 8,
+    cfgScale: 7,
     steps: 50,
     sampler: Generation.DiffusionSampler.SAMPLER_K_DPMPP_2M,
   });
 
-  try {
-    const generatedImageResp = await executeGenerationRequest(
-      client,
-      request,
-      metadata
-    );
-    onGenerationComplete(generatedImageResp);
-  } catch (err) {
-    console.log(err);
-  }
+  const generatedImageResp = await executeGenerationRequest(
+    client,
+    request,
+    metadata
+  );
+  return onGenerationComplete(generatedImageResp);
 };
